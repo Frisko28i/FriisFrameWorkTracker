@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -97,15 +97,13 @@
         <div class="stat-row"><span>Samlet tid:</span> <span id="grandTotal" class="grand-total">0h 0m</span></div>
         <div class="stat-row"><span>Estimeret løn:</span> <span id="grandPay" style="font-weight: 800; color: var(--accent); font-size: 1.3rem;">0.00 kr</span></div>
     </div>
-    <button onclick="deleteJob()" style="background:none; color:red; margin-top:20px; font-size:0.6rem; width:100%; opacity:0.3;">Slet hele jobbet</button>
+    <button onclick="deleteJob()" style="background:none; color:red; margin-top:20px; font-size:0.6rem; width:100%; opacity:0.3;">Slet dette job permanent</button>
 </div>
 
 <script>
-    // --- SETTINGS ---
-    const PASSWORD = "Frisko28i"; // SKIFT DETTE FØR UPLOAD
-    const STORAGE_KEY = 'workData_v8';
+    const PASSWORD = "123"; // CHANGE THIS
+    const STORAGE_KEY = 'workData_v9';
 
-    // --- AUTH ---
     function checkAuth() {
         if (sessionStorage.getItem('workAuth') !== 'true') {
             const entry = prompt("Adgangskode:");
@@ -115,7 +113,6 @@
     }
     checkAuth();
 
-    // --- DATA ---
     let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
         currentJob: "Job 1", darkMode: false, currency: "kr",
         jobs: { "Job 1": { mode: 'weekly', wage: 0, weeks: [], custom: [] } }
@@ -140,7 +137,7 @@
     }
 
     function addNewWeek() {
-        const dt = prompt("Startdato for ugen (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
+        const dt = prompt("Startdato (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
         if(!dt) return;
         data.jobs[data.currentJob].weeks.unshift({ startDate: dt, days: DAYS.map(d => ({d, s:'', e:'', b:0})) });
         save();
@@ -166,6 +163,8 @@
     function render() {
         document.body.className = data.darkMode ? 'dark' : '';
         const job = data.jobs[data.currentJob];
+        if(!job) return; 
+
         document.getElementById('displayTitle').innerText = data.currentJob;
         document.getElementById('wageInput').value = job.wage;
         document.getElementById('currencySelect').value = data.currency;
@@ -187,7 +186,7 @@
                 let wHtml = `<div class="week-block">
                     <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold; margin-bottom:5px;">
                         <span>Uge af ${w.startDate}</span>
-                        <button onclick="deleteWeek(${wIdx})" style="color:red; background:none; font-size:0.6rem;">Fjern uge</button>
+                        <button onclick="deleteWeek(${wIdx})" style="color:red; background:none; font-size:0.6rem;">Fjern</button>
                     </div>`;
                 w.days.forEach((day, dIdx) => {
                     wHtml += `<div class="day-row" style="grid-template-columns: 35px 1fr 1fr 45px 55px;">
@@ -223,6 +222,7 @@
 
     function calculateTotals() {
         const job = data.jobs[data.currentJob];
+        if(!job) return;
         let totalMin = 0;
         const calc = (s,e,b) => {
             if(!s || !e) return 0;
@@ -245,15 +245,13 @@
             });
         }
         document.getElementById('grandTotal').innerText = `${Math.floor(totalMin/60)}h ${totalMin%60}m`;
-        
-        // Show currency after number (e.g. 500.00 kr)
         document.getElementById('grandPay').innerText = `${((totalMin/60)*job.wage).toFixed(2)} ${data.currency}`;
     }
 
     function exportCSV() {
         const j = data.jobs[data.currentJob];
         const list = j.mode==='weekly' ? j.weeks.flatMap(w => w.days.map(d=>({dt:w.startDate, ...d}))) : j.custom;
-        let csv = "Date,Job,In,Out,Break,Hours\n";
+        let csv = "Dato,Job,Ind,Ud,Pause,Timer\n";
         list.forEach(e => {
             if(!e.s || !e.e) return;
             const [sh,sm]=e.s.split(':').map(Number); const [eh,em]=e.e.split(':').map(Number);
@@ -267,24 +265,33 @@
 
     function saveFullBackup() {
         const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
-        const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Backup_${new Date().toISOString().split('T')[0]}.json`; a.click();
+        const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Backup.json`; a.click();
     }
 
     function restoreFullBackup(ev) {
         const reader = new FileReader();
-        reader.onload = (e) => { 
-            try {
-                data = JSON.parse(e.target.result); 
-                save(); 
-                location.reload(); 
-            } catch(err) { alert("Fejl i backup-fil"); }
-        };
+        reader.onload = (e) => { try { data = JSON.parse(e.target.result); save(); location.reload(); } catch(err){alert("Fejl");} };
         reader.readAsText(ev.target.files[0]);
     }
 
-    function deleteWeek(i) { if(confirm("Slet denne uge?")) { data.jobs[data.currentJob].weeks.splice(i,1); save(); } }
+    function deleteWeek(i) { if(confirm("Slet?")) { data.jobs[data.currentJob].weeks.splice(i,1); save(); } }
     function removeCustomRow(i) { data.jobs[data.currentJob].custom.splice(i,1); save(); }
-    function deleteJob() { if(confirm("Slet dette job permanent?")) { delete data.jobs[data.currentJob]; location.reload(); } }
+    
+    // FIXED DELETE JOB LOGIC
+    function deleteJob() { 
+        if(confirm("Slet dette job permanent?")) { 
+            delete data.jobs[data.currentJob]; 
+            const remainingJobs = Object.keys(data.jobs);
+            if(remainingJobs.length === 0) {
+                // If no jobs left, reset to clean state
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            } else {
+                data.currentJob = remainingJobs[0];
+                save(); 
+            }
+        } 
+    }
 
     render();
 </script>
