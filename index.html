@@ -3,228 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WorkTracker Pro</title>
+    <title>WorkTracker Pro v11</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2618/2618469.png">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
     <style>
-        :root { --primary: #4f46e5; --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --accent: #059669; --border: #e2e8f0; }
+        :root { --primary: #4f46e5; --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --accent: #059669; --border: #e2e8f0; --danger: #ef4444; }
         body.dark { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --border: #334155; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; transition: 0.3s; visibility: hidden; padding-top: env(safe-area-inset-top); }
-        .header-box { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-        .row { display: flex; gap: 5px; align-items: center; width: 100%; }
-        select, input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; background: var(--card); color: var(--text); outline: none; }
-        button { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
-        .btn-main { background: var(--primary); color: white; flex: 1; }
-        .btn-tab { background: #94a3b8; color: white; flex: 1; opacity: 0.5; }
-        .btn-tab.active { opacity: 1; background: var(--primary); }
-        .container { background: var(--card); padding: 1rem; border-radius: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; box-sizing: border-box; }
+        
+        .container { background: var(--card); padding: 1.2rem; border-radius: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; box-sizing: border-box; }
+        
+        .nav-tabs { display: flex; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; background: #94a3b8; color: white; font-weight: bold; opacity: 0.6; }
+        .tab-btn.active { opacity: 1; background: var(--primary); }
+
         .view { display: none; }
         .view.active { display: block; }
-        .day-row { display: grid; grid-template-columns: 30px 85px 1fr 1fr 45px 55px 25px; gap: 4px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
-        .week-block { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; padding: 8px; background: rgba(0,0,0,0.02); }
-        .footer { margin-top: 1rem; padding-top: 1rem; border-top: 3px solid var(--primary); }
-        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .grand-total { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+
+        .row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+        select, input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 0.9rem; flex-grow: 1; }
+        
+        button { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; width: 100%; margin-top: 20px; }
+        
+        .week-block { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.02); }
+        .day-row { display: grid; grid-template-columns: 45px 1fr 1fr 45px 55px; gap: 5px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        
+        .footer { margin-top: 1.5rem; padding-top: 1rem; border-top: 3px solid var(--primary); }
+        .stat-row { display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 5px; }
+        
+        .user-badge { padding: 8px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .user-badge.active { border-color: var(--primary); background: rgba(79, 70, 229, 0.1); }
     </style>
 </head>
 <body>
 
-<div class="header-box">
-    <div class="row">
-        <button class="btn-tab active" id="tabMain" onclick="switchTab('main')">Tracker</button>
-        <button class="btn-tab" id="tabSettings" onclick="switchTab('settings')">Settings</button>
-        <button style="background: #334155; color:white;" onclick="toggleDark()">🌓</button>
-    </div>
+<div class="nav-tabs">
+    <button class="tab-btn active" onclick="showView('main')">Tracker</button>
+    <button class="tab-btn" onclick="showView('settings')">Settings</button>
+    <button onclick="toggleDark()" style="background:none; font-size:1.2rem;">🌓</button>
 </div>
 
 <div class="container">
-    <div id="viewMain" class="view active">
-        <div class="row" style="margin-bottom:10px;">
-            <select id="jobSelect" onchange="changeJob()"></select>
-            <button class="btn-main" onclick="createNewJob()" id="lblNewJob">+ Job</button>
+    <div id="view-main" class="view active">
+        <div class="row">
+            <select id="jobSelect" onchange="switchJob(this.value)"></select>
+            <button class="btn-primary" onclick="addJob()">+ Job</button>
         </div>
-        <div class="row" style="margin-bottom:10px;">
-            <select id="currencySelect" style="width:60px" onchange="updateCurrency(this.value)">
+        <div class="row">
+            <select id="currencySelect" style="max-width:70px;" onchange="updateSet('currency', this.value)">
                 <option value="kr">kr</option><option value="$">$</option><option value="€">€</option>
             </select>
-            <input type="number" id="wageInput" style="width:70px" placeholder="Wage" oninput="updateWage(this.value)">
-            <button class="btn-tab" id="modeWeekly" onclick="setMode('weekly')">Weekly</button>
-            <button class="btn-tab" id="modeCustom" onclick="setMode('custom')">List</button>
+            <input type="number" id="wageInput" placeholder="Wage" oninput="updateSet('wage', this.value)">
+            <button onclick="addNewWeek()" class="btn-primary">Add Week</button>
         </div>
-        <div id="entries-list"></div>
-        <button id="addBtnWeekly" class="btn-main" style="width:100%; margin-top:10px; display:none;" onclick="addNewWeek()">+ Week</button>
-        <button id="addBtnCustom" class="btn-main" style="width:100%; margin-top:10px; display:none; background:var(--accent);" onclick="addCustomRow()">+ Shift</button>
+
+        <div id="list-container"></div>
+
         <div class="footer">
-            <div class="stat-row"><span id="lblTotalTime">Total:</span> <span id="grandTotal" class="grand-total">0h</span></div>
-            <div class="stat-row"><span id="lblTotalPay">Pay:</span> <span id="grandPay" class="grand-total">0 kr</span></div>
+            <div class="stat-row"><b>Total:</b> <span id="totalTime">0h</span></div>
+            <div class="stat-row"><b>Pay:</b> <span id="totalPay">0 kr</span></div>
         </div>
+        
+        <button class="btn-danger" onclick="deleteCurrentJob()">Delete Current Job</button>
     </div>
 
-    <div id="viewSettings" class="view">
-        <h3 id="lblSettingsTitle">Settings</h3>
-        <label id="lblLangSelect">Language / Sprog</label>
-        <select id="langSelect" style="width:100%; margin-bottom:20px;" onchange="updateLang(this.value)">
+    <div id="view-settings" class="view">
+        <h3>Settings / Indstillinger</h3>
+        
+        <label>Language / Sprog:</label>
+        <select onchange="updateSet('lang', this.value)" id="langSelect" style="width:100%; margin-bottom:20px;">
             <option value="en">English</option>
             <option value="da">Dansk</option>
         </select>
-        
-        <h4 id="lblUserTitle">User Profiles</h4>
+
+        <label>User Profiles:</label>
         <div id="user-list"></div>
-        <button class="btn-main" style="width:100%; margin-top:10px;" onclick="createNewUser()">+ Add User</button>
+        <button class="btn-primary" style="width:100%;" onclick="addUser()">+ Create New User</button>
+
+        <hr style="margin:20px 0;">
         
-        <hr style="margin:20px 0; border:0; border-top:1px solid var(--border);">
-        <button onclick="saveFullBackup()" style="background:#059669; color:white; width:100%; margin-bottom:10px;">💾 Backup (JSON)</button>
-        <button onclick="exportCSV()" style="background:#334155; color:white; width:100%;">📤 Export CSV</button>
+        <h4>Data Management</h4>
+        <button onclick="exportJSON()" style="width:100%; background:#059669; color:white; margin-bottom:10px;">💾 Backup All (Cloud)</button>
+        <button onclick="document.getElementById('importFile').click()" style="width:100%; background:#d97706; color:white;">🔄 Restore from Backup</button>
+        <input type="file" id="importFile" style="display:none" accept=".json" onchange="importJSON(event)">
     </div>
 </div>
 
 <script>
-    const PASSWORD = "123";
-    const APP_CONFIG_KEY = 'workTracker_Config';
+    const PASS = "123";
+    const CONFIG_KEY = 'WT_CONFIG';
     
-    // 1. Language Dictionary
-    const i18n = {
-        en: { settings: "Settings", lang: "Language", jobs: "Jobs", newJob: "+ Job", weekly: "Weekly", custom: "List", total: "Total Time:", pay: "Pay:", addWeek: "+ New Week", addShift: "+ Add Shift", user: "Users", wage: "Wage", deleteJob: "Delete Job" },
-        da: { settings: "Indstillinger", lang: "Sprog", jobs: "Job", newJob: "+ Job", weekly: "Ugentlig", custom: "Liste", total: "Samlet tid:", pay: "Løn:", addWeek: "+ Ny uge", addShift: "+ Tilføj vagt", user: "Brugere", wage: "Løn", deleteJob: "Slet job" }
+    // Core App State
+    let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || { 
+        lang: 'da', 
+        currentUser: 'Default', 
+        darkMode: false, 
+        users: ['Default'] 
     };
 
-    // 2. Load Global Config (Language, Current User)
-    let config = JSON.parse(localStorage.getItem(APP_CONFIG_KEY)) || { lang: 'da', currentUser: 'User1', darkMode: false, users: ['User1'] };
-    
-    // 3. Load User Data
-    let data;
-    function loadUserData() {
-        const key = `workData_${config.currentUser}`;
-        data = JSON.parse(localStorage.getItem(key)) || { currency: "kr", jobs: { "Default": { mode: 'weekly', wage: 0, weeks: [], custom: [] } }, currentJob: "Default" };
-    }
+    let userData;
 
-    function checkAuth() {
-        if (sessionStorage.getItem('workAuth') !== 'true') {
-            const entry = prompt("Password:");
-            if (entry === PASSWORD) { sessionStorage.setItem('workAuth', 'true'); document.body.style.visibility = "visible"; }
+    function init() {
+        const auth = sessionStorage.getItem('WT_AUTH');
+        if (auth !== 'true') {
+            const p = prompt("Password:");
+            if (p === PASS) { sessionStorage.setItem('WT_AUTH', 'true'); }
             else { window.location.reload(); }
-        } else { document.body.style.visibility = "visible"; }
+        }
+        document.body.style.visibility = "visible";
+        loadUser();
     }
 
-    function save() {
-        localStorage.setItem(APP_CONFIG_KEY, JSON.stringify(config));
-        localStorage.setItem(`workData_${config.currentUser}`, JSON.stringify(data));
+    function loadUser() {
+        const dataKey = `WT_DATA_${config.currentUser}`;
+        userData = JSON.parse(localStorage.getItem(dataKey)) || {
+            jobs: { "Job 1": { wage: 0, currency: 'kr', weeks: [] } },
+            currentJob: "Job 1"
+        };
         render();
     }
 
-    // --- TAB & SETTINGS LOGIC ---
-    function switchTab(tab) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
-        if(tab === 'main') { document.getElementById('viewMain').classList.add('active'); document.getElementById('tabMain').classList.add('active'); }
-        else { document.getElementById('viewSettings').classList.add('active'); document.getElementById('tabSettings').classList.add('active'); }
-    }
-
-    function updateLang(l) { config.lang = l; save(); }
-    function toggleDark() { config.darkMode = !config.darkMode; save(); }
-
-    function createNewUser() {
-        const name = prompt("New User Name:").replace(/\s/g, '');
-        if(name && !config.users.includes(name)) {
-            config.users.push(name);
-            config.currentUser = name;
-            loadUserData();
-            save();
-        }
-    }
-
-    function switchUser(name) {
-        config.currentUser = name;
-        loadUserData();
-        save();
-    }
-
-    // --- TRACKER LOGIC ---
-    function changeJob() { data.currentJob = document.getElementById('jobSelect').value; save(); }
-    function setMode(m) { data.jobs[data.currentJob].mode = m; save(); }
-    function updateWage(v) { data.jobs[data.currentJob].wage = parseFloat(v) || 0; save(); }
-    function updateCurrency(v) { data.currency = v; save(); }
-
-    function addNewWeek() {
-        const dt = prompt("Start date:", new Date().toISOString().split('T')[0]);
-        if(dt) { data.jobs[data.currentJob].weeks.unshift({ startDate: dt, days: ['Man','Tir','Ons','Tor','Fre','Lør','Søn'].map(d => ({d, s:'', e:'', b:0})) }); save(); }
+    function save() {
+        localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+        localStorage.setItem(`WT_DATA_${config.currentUser}`, JSON.stringify(userData));
+        render();
     }
 
     function render() {
         document.body.className = config.darkMode ? 'dark' : '';
-        const L = i18n[config.lang];
-        const job = data.jobs[data.currentJob];
-
-        // Update Labels
-        document.getElementById('lblSettingsTitle').innerText = L.settings;
-        document.getElementById('lblNewJob').innerText = L.newJob;
-        document.getElementById('modeWeekly').innerText = L.weekly;
-        document.getElementById('modeCustom').innerText = L.custom;
-        document.getElementById('lblTotalTime').innerText = L.total;
-        document.getElementById('lblTotalPay').innerText = L.pay;
-        document.getElementById('addBtnWeekly').innerText = L.addWeek;
-        document.getElementById('addBtnCustom').innerText = L.addShift;
-        document.getElementById('langSelect').value = config.lang;
-
-        // Render User List in Settings
-        const userDiv = document.getElementById('user-list');
-        userDiv.innerHTML = '';
-        config.users.forEach(u => {
-            const active = u === config.currentUser ? 'border: 2px solid var(--primary);' : '';
-            userDiv.innerHTML += `<button onclick="switchUser('${u}')" style="width:100%; margin-bottom:5px; ${active}">${u} ${u === config.currentUser ? '(Current)' : ''}</button>`;
-        });
-
-        // Job Selector
+        const job = userData.jobs[userData.currentJob] || Object.values(userData.jobs)[0];
+        
+        // Setup Job Selector
         const sel = document.getElementById('jobSelect');
         sel.innerHTML = '';
-        Object.keys(data.jobs).forEach(n => sel.innerHTML += `<option value="${n}" ${n===data.currentJob?'selected':''}>${n}</option>`);
-        
-        document.getElementById('wageInput').value = job.wage;
-        document.getElementById('modeWeekly').className = `btn-tab ${job.mode==='weekly'?'active':''}`;
-        document.getElementById('modeCustom').className = `btn-tab ${job.mode==='custom'?'active':''}`;
-        document.getElementById('addBtnWeekly').style.display = job.mode==='weekly'?'block':'none';
-        document.getElementById('addBtnCustom').style.display = job.mode==='custom'?'block':'none';
+        Object.keys(userData.jobs).forEach(name => {
+            sel.innerHTML += `<option value="${name}" ${name===userData.currentJob?'selected':''}>${name}</option>`;
+        });
 
-        const list = document.getElementById('entries-list');
+        document.getElementById('wageInput').value = job.wage;
+        document.getElementById('currencySelect').value = job.currency || 'kr';
+        document.getElementById('langSelect').value = config.lang;
+
+        // Render User List
+        const uList = document.getElementById('user-list');
+        uList.innerHTML = '';
+        config.users.forEach(u => {
+            uList.innerHTML += `
+                <div class="user-badge ${u===config.currentUser?'active':''}">
+                    <span>${u}</span>
+                    <button onclick="switchUser('${u}')">${u===config.currentUser?'Active':'Switch'}</button>
+                </div>`;
+        });
+
+        // Render Weekly List
+        const list = document.getElementById('list-container');
         list.innerHTML = '';
         let totalMin = 0;
 
-        if(job.mode === 'weekly') {
-            job.weeks.forEach((w, wi) => {
-                let h = `<div class="week-block"><div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:5px;"><b>${w.startDate}</b> <span onclick="deleteWeek(${wi})" style="color:red">X</span></div>`;
-                w.days.forEach((d, di) => {
-                    let m = calcMin(d.s, d.e, d.b); totalMin += m;
-                    h += `<div class="day-row" style="grid-template-columns: 35px 1fr 1fr 40px 50px;">
-                        <span style="font-size:0.6rem">${d.d}</span>
-                        <input type="time" value="${d.s}" oninput="updWeek(${wi},${di},'s',this.value)">
-                        <input type="time" value="${d.e}" oninput="updWeek(${wi},${di},'e',this.value)">
-                        <input type="number" value="${d.b}" oninput="updWeek(${wi},${di},'b',this.value)">
-                        <span style="font-size:0.7rem; font-weight:bold">${(m/60).toFixed(2)}h</span>
-                    </div>`;
-                });
-                list.innerHTML += h + `</div>`;
+        job.weeks.forEach((week, wIdx) => {
+            let h = `<div class="week-block">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <b>Week: ${week.start}</b>
+                    <button onclick="deleteWeek(${wIdx})" style="color:red; background:none;">X</button>
+                </div>`;
+            week.days.forEach((day, dIdx) => {
+                let m = calc(day.s, day.e, day.b);
+                totalMin += m;
+                h += `<div class="day-row">
+                    <span style="font-size:0.7rem">${day.d}</span>
+                    <input type="time" value="${day.s}" oninput="upd(${wIdx},${dIdx},'s',this.value)">
+                    <input type="time" value="${day.e}" oninput="upd(${wIdx},${dIdx},'e',this.value)">
+                    <input type="number" value="${day.b}" oninput="upd(${wIdx},${dIdx},'b',this.value)">
+                    <span style="font-size:0.75rem; font-weight:bold">${(m/60).toFixed(2)}h</span>
+                </div>`;
             });
-        }
-        document.getElementById('grandTotal').innerText = Math.floor(totalMin/60) + "h " + (totalMin%60) + "m";
-        document.getElementById('grandPay').innerText = ((totalMin/60)*job.wage).toFixed(2) + " " + data.currency;
+            list.innerHTML += h + `</div>`;
+        });
+
+        document.getElementById('totalTime').innerText = Math.floor(totalMin/60) + "h " + (totalMin%60) + "m";
+        document.getElementById('totalPay').innerText = ((totalMin/60)*job.wage).toFixed(2) + " " + (job.currency||'kr');
     }
 
-    function calcMin(s,e,b) {
+    // Logic Helpers
+    function calc(s,e,b) {
         if(!s || !e) return 0;
-        const [sh,sm] = s.split(':').map(Number); const [eh,em] = e.split(':').map(Number);
+        let [sh,sm] = s.split(':').map(Number); let [eh,em] = e.split(':').map(Number);
         let start = sh*60+sm; let end = eh*60+em; if(end<start) end+=1440;
         return Math.max(0, (end-start)-(b||0));
     }
 
-    function updWeek(wi, di, f, v) { data.jobs[data.currentJob].weeks[wi].days[di][f] = (f==='b')?parseInt(v)||0:v; save(); }
-    function deleteWeek(i) { if(confirm("Delete?")) { data.jobs[data.currentJob].weeks.splice(i,1); save(); } }
-    function createNewJob() { const n = prompt("Job Name:"); if(n && !data.jobs[n]) { data.jobs[n] = {mode:'weekly',wage:0,weeks:[],custom:[]}; data.currentJob = n; save(); } }
+    function upd(wi, di, f, v) { 
+        userData.jobs[userData.currentJob].weeks[wi].days[di][f] = (f==='b')?parseInt(v)||0:v; 
+        save(); 
+    }
 
-    checkAuth();
-    loadUserData();
-    render();
+    function switchJob(n) { userData.currentJob = n; save(); }
+    
+    function addJob() { 
+        let n = prompt("Job Name:"); 
+        if(n && !userData.jobs[n]) { userData.jobs[n] = { wage:0, currency:'kr', weeks:[] }; userData.currentJob = n; save(); } 
+    }
+
+    function deleteCurrentJob() {
+        if(confirm(`Delete ${userData.currentJob}?`)) {
+            delete userData.jobs[userData.currentJob];
+            userData.currentJob = Object.keys(userData.jobs)[0] || "Job 1";
+            if(!userData.jobs[userData.currentJob]) { userData.jobs["Job 1"] = { wage:0, currency:'kr', weeks:[] }; }
+            save();
+        }
+    }
+
+    function addNewWeek() {
+        let d = prompt("Start Date:", new Date().toISOString().split('T')[0]);
+        if(d) {
+            userData.jobs[userData.currentJob].weeks.unshift({
+                start: d,
+                days: ['Man','Tir','Ons','Tor','Fre','Lør','Søn'].map(name => ({d: name, s:'', e:'', b:0}))
+            });
+            save();
+        }
+    }
+
+    function deleteWeek(i) { if(confirm("Delete Week?")) { userData.jobs[userData.currentJob].weeks.splice(i,1); save(); } }
+
+    function switchUser(u) { config.currentUser = u; loadUser(); }
+    function addUser() { let n = prompt("User Name:"); if(n && !config.users.includes(n)) { config.users.push(n); config.currentUser = n; save(); } }
+
+    function showView(v) {
+        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${v}`).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function updateSet(k, v) {
+        if(k === 'lang') config.lang = v;
+        if(k === 'wage') userData.jobs[userData.currentJob].wage = parseFloat(v) || 0;
+        if(k === 'currency') userData.jobs[userData.currentJob].currency = v;
+        save();
+    }
+
+    function toggleDark() { config.darkMode = !config.darkMode; save(); }
+
+    function exportJSON() {
+        const blob = new Blob([JSON.stringify({config, userData})], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `WorkTracker_Backup_${config.currentUser}.json`; a.click();
+    }
+
+    function importJSON(ev) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const d = JSON.parse(e.target.result);
+            if(d.userData) {
+                userData = d.userData;
+                if(d.config) config = d.config;
+                save();
+                location.reload();
+            }
+        };
+        reader.readAsText(ev.target.files[0]);
+    }
+
+    init();
 </script>
 </body>
 </html>
