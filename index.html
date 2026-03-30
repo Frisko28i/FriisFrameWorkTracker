@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="da">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -57,61 +57,62 @@
     <div id="view-main" class="view active">
         <div class="row">
             <select id="jobSelect" onchange="switchJob(this.value)"></select>
-            <button class="btn-primary" onclick="addJob()">+ Job</button>
+            <button class="btn-primary" onclick="addJob()" id="btn-add-job">+ Job</button>
         </div>
         <div class="row">
-            <button id="mode-weekly" class="btn-mode" onclick="setMode('weekly')">Ugentlig</button>
-            <button id="mode-custom" class="btn-mode" onclick="setMode('custom')">Liste</button>
+            <button id="mode-weekly" class="btn-mode" onclick="setMode('weekly')">Weekly</button>
+            <button id="mode-custom" class="btn-mode" onclick="setMode('custom')">List</button>
         </div>
         <div class="row">
             <select id="currencySelect" style="max-width:70px;" onchange="updateSet('currency', this.value)">
                 <option value="kr">kr</option><option value="$">$</option><option value="€">€</option>
             </select>
-            <input type="number" id="wageInput" placeholder="Løn" oninput="updateSet('wage', this.value)">
+            <input type="number" id="wageInput" placeholder="Wage" oninput="updateSet('wage', this.value)">
         </div>
 
         <div id="list-container"></div>
         
-        <button id="add-week-btn" class="add-btn" style="background:var(--primary); display:none;" onclick="addNewWeek()">+ Uge</button>
-        <button id="add-day-btn" class="add-btn" style="background:var(--accent); display:none;" onclick="addCustomRow()">+ Dag</button>
+        <button id="add-week-btn" class="add-btn" style="background:var(--primary); display:none;" onclick="addNewWeek()">+ Week</button>
+        <button id="add-day-btn" class="add-btn" style="background:var(--accent); display:none;" onclick="addCustomRow()">+ Day</button>
 
         <div class="footer">
             <div class="stat-row"><b id="lbl-total">Total:</b> <span id="totalTime">0h</span></div>
-            <div class="stat-row"><b id="lbl-pay">Løn:</b> <span id="totalPay">0 kr</span></div>
+            <div class="stat-row"><b id="lbl-pay">Pay:</b> <span id="totalPay">0 kr</span></div>
         </div>
-        <button onclick="deleteCurrentJob()" style="background:none; color:var(--danger); width:100%; margin-top:20px; font-size:0.7rem; opacity:0.5;" id="lbl-deljob">Slet Job</button>
+        <button onclick="deleteCurrentJob()" style="background:none; color:var(--danger); width:100%; margin-top:20px; font-size:0.7rem; opacity:0.5;" id="lbl-deljob">Delete Job</button>
     </div>
 
     <div id="view-settings" class="view">
-        <h3 id="lbl-settings">Indstillinger</h3>
+        <h3 id="lbl-settings-title">Settings</h3>
         
-        <label id="lbl-lang">Sprog / Language:</label>
+        <label id="lbl-lang-select">Language:</label>
         <select onchange="updateSet('lang', this.value)" id="langSelect" style="width:100%; margin-bottom:20px;">
-            <option value="da">Dansk</option>
             <option value="en">English</option>
+            <option value="da">Dansk</option>
         </select>
 
-        <label id="lbl-users">Brugerprofiler:</label>
+        <label id="lbl-users-title">User Profiles:</label>
         <div id="user-list" style="margin-top:10px;"></div>
-        <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="addUser()">+ Ny Bruger</button>
+        <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="addUser()" id="btn-add-user">+ New User</button>
 
         <hr style="margin:20px 0;">
-        <button onclick="exportJSON()" style="width:100%; background:#059669; color:white; margin-bottom:10px;">💾 Backup</button>
-        <button onclick="document.getElementById('importFile').click()" style="width:100%; background:#d97706; color:white;">🔄 Gendan Data</button>
+        <h4 id="lbl-data-title">Data Management</h4>
+        <button onclick="exportJSON()" style="width:100%; background:#059669; color:white; margin-bottom:10px;" id="btn-backup">💾 Backup</button>
+        <button onclick="document.getElementById('importFile').click()" style="width:100%; background:#d97706; color:white;" id="btn-restore">🔄 Restore</button>
         <input type="file" id="importFile" style="display:none" accept=".json" onchange="importJSON(event)">
     </div>
 </div>
 
 <script>
     const PASS = "123"; 
-    const CONFIG_KEY = 'WT_CONFIG_V13';
+    const CONFIG_KEY = 'WT_CONFIG_V14';
     
     const i18n = {
-        da: { tracker: "Kalender", settings: "Indstillinger", lang: "Sprog", total: "Total:", pay: "Løn:", deljob: "Slet Job", addWeek: "+ Ny Uge", addDay: "+ Ny Dag", users: "Brugere", weekLabel: "Uge:" },
-        en: { tracker: "Tracker", settings: "Settings", lang: "Language", total: "Total:", pay: "Pay:", deljob: "Delete Job", addWeek: "+ New Week", addDay: "+ New Day", users: "Users", weekLabel: "Week:" }
+        en: { tracker: "Tracker", settings: "Settings", lang: "Language", total: "Total:", pay: "Pay:", deljob: "Delete Job", addWeek: "+ New Week", addDay: "+ New Day", users: "Users", data: "Data Management", weekLabel: "Week:", wagePlace: "Wage", newJob: "+ Job", newUser: "+ New User", backup: "💾 Backup", restore: "🔄 Restore", listMode: "List", weeklyMode: "Weekly", days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
+        da: { tracker: "Kalender", settings: "Indstillinger", lang: "Sprog", total: "Total:", pay: "Løn:", deljob: "Slet Job", addWeek: "+ Ny Uge", addDay: "+ Ny Dag", users: "Brugere", data: "Datahåndtering", weekLabel: "Uge:", wagePlace: "Løn", newJob: "+ Job", newUser: "+ Ny Bruger", backup: "💾 Backup", restore: "🔄 Gendan", listMode: "Liste", weeklyMode: "Ugentlig", days: ['Man','Tir','Ons','Tor','Fre','Lør','Søn'] }
     };
 
-    let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || { lang: 'da', currentUser: 'Default', darkMode: false, users: ['Default'] };
+    let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || { lang: 'en', currentUser: 'Default', darkMode: false, users: ['Default'] };
     let userData;
 
     function init() {
@@ -144,16 +145,25 @@
         const L = i18n[config.lang];
         const job = userData.jobs[userData.currentJob] || Object.values(userData.jobs)[0];
         
-        // Update UI Labels
+        // Update All UI Text Elements
         document.getElementById('nav-tracker').innerText = L.tracker;
         document.getElementById('nav-settings').innerText = L.settings;
-        document.getElementById('lbl-settings').innerText = L.settings;
-        document.getElementById('lbl-lang').innerText = L.lang;
+        document.getElementById('lbl-settings-title').innerText = L.settings;
+        document.getElementById('lbl-lang-select').innerText = L.lang;
+        document.getElementById('lbl-users-title').innerText = L.users;
+        document.getElementById('lbl-data-title').innerText = L.data;
         document.getElementById('lbl-total').innerText = L.total;
         document.getElementById('lbl-pay').innerText = L.pay;
         document.getElementById('lbl-deljob').innerText = L.deljob;
         document.getElementById('add-week-btn').innerText = L.addWeek;
         document.getElementById('add-day-btn').innerText = L.addDay;
+        document.getElementById('btn-add-job').innerText = L.newJob;
+        document.getElementById('btn-add-user').innerText = L.newUser;
+        document.getElementById('btn-backup').innerText = L.backup;
+        document.getElementById('btn-restore').innerText = L.restore;
+        document.getElementById('mode-weekly').innerText = L.weeklyMode;
+        document.getElementById('mode-custom').innerText = L.listMode;
+        document.getElementById('wageInput').placeholder = L.wagePlace;
         document.getElementById('langSelect').value = config.lang;
 
         const sel = document.getElementById('jobSelect');
@@ -172,7 +182,7 @@
         const uList = document.getElementById('user-list');
         uList.innerHTML = '';
         config.users.forEach(u => {
-            uList.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--card);"><span>${u}</span><button onclick="switchUser('${u}')" class="${u===config.currentUser?'btn-primary':''}" style="padding:4px 10px;">${u===config.currentUser?'Aktiv':'Skift'}</button></div>`;
+            uList.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--card);"><span>${u}</span><button onclick="switchUser('${u}')" class="${u===config.currentUser?'btn-primary':''}" style="padding:4px 10px;">${u===config.currentUser?'Active':'Switch'}</button></div>`;
         });
 
         const list = document.getElementById('list-container');
@@ -186,7 +196,7 @@
                 week.days.forEach((day, di) => {
                     let m = calc(day.s, day.e, day.b); totalMin += m;
                     h += `<div class="day-row" style="grid-template-columns: 40px 1fr 1fr 45px 60px;">
-                        <span style="font-size:0.7rem; font-weight:bold;">${day.d}</span>
+                        <span style="font-size:0.7rem; font-weight:bold;">${L.days[di] || day.d}</span>
                         <input type="time" value="${day.s}" oninput="upd(${wi},${di},'s',this.value)">
                         <input type="time" value="${day.e}" oninput="upd(${wi},${di},'e',this.value)">
                         <input type="number" value="${day.b}" oninput="upd(${wi},${di},'b',this.value)">
@@ -229,14 +239,14 @@
     function updC(i, f, v) { userData.jobs[userData.currentJob].custom[i][f] = (f==='b')?parseInt(v)||0:v; save(); }
     function setMode(m) { userData.jobs[userData.currentJob].mode = m; save(); }
     function switchJob(n) { userData.currentJob = n; save(); }
-    function addJob() { let n = prompt("Nyt job:"); if(n && !userData.jobs[n]) { userData.jobs[n] = { mode:'weekly', wage:0, currency:'kr', weeks:[], custom:[] }; userData.currentJob = n; save(); } }
-    function deleteCurrentJob() { if(confirm("Slet job?")) { delete userData.jobs[userData.currentJob]; userData.currentJob = Object.keys(userData.jobs)[0] || "Job 1"; if(!userData.jobs[userData.currentJob]) userData.jobs["Job 1"] = { mode:'weekly', wage:0, currency:'kr', weeks:[], custom:[] }; save(); } }
-    function addNewWeek() { let d = prompt("Startdato:", new Date().toISOString().split('T')[0]); if(d) { userData.jobs[userData.currentJob].weeks.unshift({ start: d, days: ['Man','Tir','Ons','Tor','Fre','Lør','Søn'].map(name => ({d: name, s:'', e:'', b:0})) }); save(); } }
+    function addJob() { let n = prompt("New job name:"); if(n && !userData.jobs[n]) { userData.jobs[n] = { mode:'weekly', wage:0, currency:'kr', weeks:[], custom:[] }; userData.currentJob = n; save(); } }
+    function deleteCurrentJob() { if(confirm("Delete this job?")) { delete userData.jobs[userData.currentJob]; userData.currentJob = Object.keys(userData.jobs)[0] || "Job 1"; if(!userData.jobs[userData.currentJob]) userData.jobs["Job 1"] = { mode:'weekly', wage:0, currency:'kr', weeks:[], custom:[] }; save(); } }
+    function addNewWeek() { let d = prompt("Start date:", new Date().toISOString().split('T')[0]); if(d) { userData.jobs[userData.currentJob].weeks.unshift({ start: d, days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(name => ({d: name, s:'', e:'', b:0})) }); save(); } }
     function addCustomRow() { userData.jobs[userData.currentJob].custom.push({dt: new Date().toISOString().split('T')[0], s:'', e:'', b:0}); save(); }
-    function deleteWeek(i) { if(confirm("Slet uge?")) { userData.jobs[userData.currentJob].weeks.splice(i,1); save(); } }
-    function deleteDay(i) { if(confirm("Slet dag?")) { userData.jobs[userData.currentJob].custom.splice(i,1); save(); } }
+    function deleteWeek(i) { if(confirm("Delete week?")) { userData.jobs[userData.currentJob].weeks.splice(i,1); save(); } }
+    function deleteDay(i) { if(confirm("Delete day?")) { userData.jobs[userData.currentJob].custom.splice(i,1); save(); } }
     function switchUser(u) { config.currentUser = u; loadUser(); }
-    function addUser() { let n = prompt("Brugernavn:"); if(n && !config.users.includes(n)) { config.users.push(n); config.currentUser = n; save(); } }
+    function addUser() { let n = prompt("Username:"); if(n && !config.users.includes(n)) { config.users.push(n); config.currentUser = n; save(); } }
     function showView(v) { document.querySelectorAll('.view').forEach(el => el.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); document.getElementById(`view-${v}`).classList.add('active'); document.getElementById(`nav-${v}`).classList.add('active'); }
     function updateSet(k, v) { if(k === 'lang') config.lang = v; if(k === 'wage') userData.jobs[userData.currentJob].wage = parseFloat(v) || 0; if(k === 'currency') userData.jobs[userData.currentJob].currency = v; save(); }
     function toggleDark() { config.darkMode = !config.darkMode; save(); }
