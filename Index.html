@@ -22,42 +22,40 @@
         body { 
             font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); 
             margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; 
-            transition: background 0.3s; visibility: hidden; /* Hidden until password check */
+            transition: 0.3s; visibility: hidden; padding-top: env(safe-area-inset-top);
         }
         
-        .header-box { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-top: env(safe-area-inset-top); }
-        .row { display: flex; gap: 8px; align-items: center; }
+        .header-box { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .row { display: flex; gap: 5px; align-items: center; width: 100%; }
         
-        select, input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.9rem; background: var(--card); color: var(--text); outline: none; }
+        select, input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; background: var(--card); color: var(--text); outline: none; }
         select { flex-grow: 1; }
         .wage-input { width: 70px; }
-        .currency-select { width: 65px; flex-grow: 0; }
+        .currency-select { width: 60px; }
 
-        button { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+        button { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
         .btn-job { background: var(--primary); color: white; }
         .btn-mode { background: #94a3b8; color: white; flex: 1; opacity: 0.5; }
         .btn-mode.active { opacity: 1; background: var(--primary); }
-        .btn-dark { background: #334155; color: white; border: 1px solid var(--border); }
+        .btn-dark { background: #334155; color: white; }
 
         .container { background: var(--card); padding: 1rem; border-radius: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; box-sizing: border-box; }
         
         .labels { display: grid; grid-template-columns: 30px 85px 1fr 1fr 45px 55px 25px; gap: 4px; font-size: 0.5rem; font-weight: bold; color: #64748b; margin-bottom: 5px; text-align: center; }
 
-        .day-row { display: grid; grid-template-columns: 30px 85px 1fr 1fr 45px 55px 25px; gap: 4px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); background: var(--card); }
-        .drag-handle { cursor: grab; color: #cbd5e1; font-size: 1.2rem; text-align: center; }
+        .week-block { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; padding: 8px; background: rgba(0,0,0,0.02); }
+        .day-row { display: grid; grid-template-columns: 30px 85px 1fr 1fr 45px 55px 25px; gap: 4px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .drag-handle { cursor: grab; color: #cbd5e1; font-size: 1.1rem; text-align: center; }
         
-        input[type="time"], input[type="number"], input[type="date"] { width: 100%; padding: 6px; font-size: 0.75rem; text-align: center; border: 1px solid var(--border); border-radius: 6px; }
-        .day-total { font-weight: bold; color: var(--primary); font-size: 0.7rem; text-align: right; }
+        input[type="time"], input[type="number"], input[type="date"] { width: 100%; padding: 4px; font-size: 0.75rem; text-align: center; border: 1px solid var(--border); border-radius: 4px; }
+        .day-total { font-weight: bold; color: var(--primary); font-size: 0.75rem; text-align: right; }
         
-        .footer { margin-top: 1.5rem; padding-top: 1rem; border-top: 3px solid var(--primary); }
-        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .grand-total { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
-        .remove-btn { color: #ef4444; background: none; font-size: 1.2rem; border: none; padding: 0; }
+        .footer { margin-top: 1rem; padding-top: 1rem; border-top: 3px solid var(--primary); }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .grand-total { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+        .remove-btn { color: #ef4444; background: none; font-size: 1.1rem; border: none; }
         
-        .add-btn { background: var(--accent); color: white; width: 100%; margin-top: 15px; padding: 15px; font-size: 1rem; border-radius: 8px; font-weight: bold; }
-        
-        /* Dragging styles */
-        .sortable-ghost { opacity: 0.3; background: #e0e7ff; }
+        .add-btn { width: 100%; margin-top: 10px; padding: 12px; font-size: 0.9rem; border-radius: 8px; font-weight: bold; color: white; }
     </style>
 </head>
 <body>
@@ -70,55 +68,62 @@
     </div>
     <div class="row">
         <select id="currencySelect" class="currency-select" onchange="updateCurrency(this.value)">
-            <option value="$">$</option><option value="€">€</option><option value="£">£</option><option value="kr">kr</option>
+            <option value="kr">kr</option>
+            <option value="€">€</option>
+            <option value="£">£</option>
+            <option value="$">$</option>
+            <option value="CHF">CHF</option>
         </select>
-        <input type="number" id="wageInput" class="wage-input" placeholder="Wage" oninput="updateWage(this.value)">
-        <button class="btn-mode" id="modeWeekly" onclick="setMode('weekly')">Weekly</button>
-        <button class="btn-mode" id="modeCustom" onclick="setMode('custom')">Custom</button>
+        <input type="number" id="wageInput" class="wage-input" placeholder="Løn" oninput="updateWage(this.value)">
+        <button class="btn-mode" id="modeWeekly" onclick="setMode('weekly')">Ugentlig</button>
+        <button class="btn-mode" id="modeCustom" onclick="setMode('custom')">Liste</button>
     </div>
-    <button style="background:#334155; color:white; width:100%" onclick="exportCSV()">📤 Export to CSV</button>
+    <div class="row">
+        <button onclick="exportCSV()" style="background:#334155; color:white; flex:1">📤 CSV</button>
+        <button onclick="saveFullBackup()" style="background:#059669; color:white; flex:1">💾 Backup</button>
+        <button onclick="document.getElementById('restorePicker').click()" style="background:#d97706; color:white; flex:1">🔄 Gendan</button>
+    </div>
+    <input type="file" id="restorePicker" style="display:none;" accept=".json" onchange="restoreFullBackup(event)">
 </div>
 
 <div class="container">
-    <h3 id="displayTitle" style="margin: 0 0 15px 0; color: var(--primary); text-align: center;">Timesheet</h3>
-    <div class="labels">
-        <div></div><div>Date</div><div>In</div><div>Out</div><div>Brk</div><div>Total</div><div></div>
-    </div>
+    <h3 id="displayTitle" style="margin: 0 0 10px 0; color: var(--primary); text-align: center;">Timeseddel</h3>
     <div id="entries-list"></div>
-    <button id="addBtn" class="add-btn" onclick="addCustomRow()" style="display:none;">+ Add New Shift</button>
+    
+    <button id="addBtnWeekly" class="add-btn" onclick="addNewWeek()" style="display:none; background: var(--primary);">+ Start Ny Uge</button>
+    <button id="addBtnCustom" class="add-btn" onclick="addCustomRow()" style="display:none; background: var(--accent);">+ Tilføj Vagt</button>
 
     <div class="footer">
-        <div class="stat-row"><span>Total Time:</span> <span id="grandTotal" class="grand-total">0h 0m</span></div>
-        <div class="stat-row"><span>Estimated Pay:</span> <span id="grandPay" style="font-weight: 800; color: var(--accent); font-size: 1.4rem;">$0.00</span></div>
+        <div class="stat-row"><span>Samlet tid:</span> <span id="grandTotal" class="grand-total">0h 0m</span></div>
+        <div class="stat-row"><span>Estimeret løn:</span> <span id="grandPay" style="font-weight: 800; color: var(--accent); font-size: 1.3rem;">0.00 kr</span></div>
     </div>
-    <button onclick="deleteJob()" style="background:none; color:red; margin-top:30px; font-size:0.7rem; width:100%; opacity:0.3;">Delete Job Permanently</button>
+    <button onclick="deleteJob()" style="background:none; color:red; margin-top:20px; font-size:0.6rem; width:100%; opacity:0.3;">Slet hele jobbet</button>
 </div>
 
 <script>
-    // --- 1. PASSWORD PROTECTION ---
-    const PASSWORD = "12345678"; // CHANGE THIS BEFORE UPLOADING TO GITHUB
-    
+    // --- SETTINGS ---
+    const PASSWORD = "123"; // SKIFT DETTE FØR UPLOAD
+    const STORAGE_KEY = 'workData_v8';
+
+    // --- AUTH ---
     function checkAuth() {
         if (sessionStorage.getItem('workAuth') !== 'true') {
-            const entry = prompt("Enter Password:");
-            if (entry === PASSWORD) {
-                sessionStorage.setItem('workAuth', 'true');
-                document.body.style.visibility = "visible";
-            } else {
-                alert("Wrong password!");
-                window.location.reload();
-            }
-        } else {
-            document.body.style.visibility = "visible";
-        }
+            const entry = prompt("Adgangskode:");
+            if (entry === PASSWORD) { sessionStorage.setItem('workAuth', 'true'); document.body.style.visibility = "visible"; }
+            else { alert("Forkert kode"); window.location.reload(); }
+        } else { document.body.style.visibility = "visible"; }
     }
     checkAuth();
 
-    // --- 2. DATA & LOGIC ---
-    let data = JSON.parse(localStorage.getItem('workData_v5')) || {
-        currentJob: "Freelance", darkMode: false, currency: "$",
-        jobs: { "Freelance": { mode: 'weekly', wage: 0, weekly: Array.from({length:7}, (_,i)=>({dt:'',s:'',e:'',b:0})), custom: [] } }
+    // --- DATA ---
+    let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+        currentJob: "Job 1", darkMode: false, currency: "kr",
+        jobs: { "Job 1": { mode: 'weekly', wage: 0, weeks: [], custom: [] } }
     };
+
+    const DAYS = ['Man','Tir','Ons','Tor','Fre','Lør','Søn'];
+
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); render(); }
 
     function toggleDark() { data.darkMode = !data.darkMode; save(); }
     function updateWage(val) { data.jobs[data.currentJob].wage = parseFloat(val) || 0; save(); }
@@ -127,29 +132,36 @@
     function changeJob() { data.currentJob = document.getElementById('jobSelect').value; save(); }
 
     function createNewJob() {
-        const name = prompt("Job Name:");
-        if (name && !data.jobs[name]) {
-            data.jobs[name] = { mode: 'weekly', wage: 0, weekly: Array.from({length:7}, (_,i)=>({dt:'',s:'',e:'',b:0})), custom: [] };
-            data.currentJob = name; save();
+        const n = prompt("Job navn:");
+        if (n && !data.jobs[n]) {
+            data.jobs[n] = { mode: 'weekly', wage: 0, weeks: [], custom: [] };
+            data.currentJob = n; save();
         }
     }
 
-    function updateEntry(index, field, val) {
-        const job = data.jobs[data.currentJob];
-        const list = (job.mode === 'weekly') ? job.weekly : job.custom;
-        list[index][field] = (field === 'b') ? parseInt(val) || 0 : val;
-        localStorage.setItem('workData_v5', JSON.stringify(data));
-        calculateOnly();
+    function addNewWeek() {
+        const dt = prompt("Startdato for ugen (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
+        if(!dt) return;
+        data.jobs[data.currentJob].weeks.unshift({ startDate: dt, days: DAYS.map(d => ({d, s:'', e:'', b:0})) });
+        save();
     }
 
-    function addCustomRow() { 
-        data.jobs[data.currentJob].custom.push({dt: new Date().toISOString().split('T')[0], s:'', e:'', b:0}); 
-        save(); 
+    function addCustomRow() {
+        data.jobs[data.currentJob].custom.push({dt: new Date().toISOString().split('T')[0], s:'', e:'', b:0});
+        save();
     }
-    function removeRow(i) { data.jobs[data.currentJob].custom.splice(i,1); save(); }
-    function deleteJob() { if(confirm("Delete?")) { delete data.jobs[data.currentJob]; data.currentJob = Object.keys(data.jobs)[0] || "Freelance"; save(); } }
 
-    function save() { localStorage.setItem('workData_v5', JSON.stringify(data)); render(); }
+    function updateWeeklyEntry(wIdx, dIdx, field, val) {
+        data.jobs[data.currentJob].weeks[wIdx].days[dIdx][field] = (field==='b')?parseInt(val)||0:val;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        calculateTotals();
+    }
+
+    function updateCustomEntry(i, field, val) {
+        data.jobs[data.currentJob].custom[i][field] = (field==='b')?parseInt(val)||0:val;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        calculateTotals();
+    }
 
     function render() {
         document.body.className = data.darkMode ? 'dark' : '';
@@ -158,92 +170,122 @@
         document.getElementById('wageInput').value = job.wage;
         document.getElementById('currencySelect').value = data.currency;
         
-        const select = document.getElementById('jobSelect');
-        select.innerHTML = '';
-        Object.keys(data.jobs).forEach(n => select.innerHTML += `<option value="${n}" ${n===data.currentJob?'selected':''}>${n}</option>`);
+        const sel = document.getElementById('jobSelect');
+        sel.innerHTML = '';
+        Object.keys(data.jobs).forEach(n => sel.innerHTML += `<option value="${n}" ${n===data.currentJob?'selected':''}>${n}</option>`);
 
         document.getElementById('modeWeekly').className = `btn-mode ${job.mode==='weekly'?'active':''}`;
         document.getElementById('modeCustom').className = `btn-mode ${job.mode==='custom'?'active':''}`;
-        document.getElementById('addBtn').style.display = job.mode === 'custom' ? 'block' : 'none';
+        document.getElementById('addBtnWeekly').style.display = job.mode==='weekly'?'block':'none';
+        document.getElementById('addBtnCustom').style.display = job.mode==='custom'?'block':'none';
 
-        const list = job.mode === 'weekly' ? job.weekly : job.custom;
-        const container = document.getElementById('entries-list');
-        container.innerHTML = '';
+        const listCont = document.getElementById('entries-list');
+        listCont.innerHTML = '';
 
-        list.forEach((entry, i) => {
-            container.innerHTML += `
-                <div class="day-row" data-id="${i}">
-                    <div class="drag-handle">${job.mode === 'custom' ? '≡' : ''}</div>
-                    <input type="date" value="${entry.dt || ''}" oninput="updateEntry(${i},'dt',this.value)">
-                    <input type="time" value="${entry.s}" oninput="updateEntry(${i},'s',this.value)">
-                    <input type="time" value="${entry.e}" oninput="updateEntry(${i},'e',this.value)">
-                    <input type="number" value="${entry.b}" oninput="updateEntry(${i},'b',this.value)">
-                    <span class="day-total">0.00h</span>
-                    ${job.mode==='custom'?`<button class="remove-btn" onclick="removeRow(${i})">×</button>`:`<span></span>`}
+        if(job.mode === 'weekly') {
+            job.weeks.forEach((w, wIdx) => {
+                let wHtml = `<div class="week-block">
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold; margin-bottom:5px;">
+                        <span>Uge af ${w.startDate}</span>
+                        <button onclick="deleteWeek(${wIdx})" style="color:red; background:none; font-size:0.6rem;">Fjern uge</button>
+                    </div>`;
+                w.days.forEach((day, dIdx) => {
+                    wHtml += `<div class="day-row" style="grid-template-columns: 35px 1fr 1fr 45px 55px;">
+                        <span style="font-size:0.65rem; font-weight:bold;">${day.d}</span>
+                        <input type="time" value="${day.s}" oninput="updateWeeklyEntry(${wIdx},${dIdx},'s',this.value)">
+                        <input type="time" value="${day.e}" oninput="updateWeeklyEntry(${wIdx},${dIdx},'e',this.value)">
+                        <input type="number" value="${day.b}" oninput="updateWeeklyEntry(${wIdx},${dIdx},'b',this.value)">
+                        <span class="day-total-week" data-w="${wIdx}" data-d="${dIdx}">0h</span>
+                    </div>`;
+                });
+                listCont.innerHTML += wHtml + `</div>`;
+            });
+        } else {
+            job.custom.forEach((entry, i) => {
+                listCont.innerHTML += `<div class="day-row">
+                    <div class="drag-handle">≡</div>
+                    <input type="date" value="${entry.dt}" oninput="updateCustomEntry(${i},'dt',this.value)">
+                    <input type="time" value="${entry.s}" oninput="updateCustomEntry(${i},'s',this.value)">
+                    <input type="time" value="${entry.e}" oninput="updateCustomEntry(${i},'e',this.value)">
+                    <input type="number" value="${entry.b}" oninput="updateCustomEntry(${i},'b',this.value)">
+                    <span class="day-total-custom" data-idx="${i}">0h</span>
+                    <button class="remove-btn" onclick="removeCustomRow(${i})">×</button>
                 </div>`;
-        });
-
-        initSortable();
-        calculateOnly();
+            });
+            Sortable.create(listCont, { handle:'.drag-handle', animation:150, onEnd:(e)=>{
+                const c = data.jobs[data.currentJob].custom;
+                const item = c.splice(e.oldIndex, 1)[0];
+                c.splice(e.newIndex, 0, item); save();
+            }});
+        }
+        calculateTotals();
     }
 
-    function initSortable() {
+    function calculateTotals() {
         const job = data.jobs[data.currentJob];
-        if (job.mode !== 'custom') return;
-        
-        Sortable.create(document.getElementById('entries-list'), {
-            handle: '.drag-handle',
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            onEnd: function (evt) {
-                const list = data.jobs[data.currentJob].custom;
-                const item = list.splice(evt.oldIndex, 1)[0];
-                list.splice(evt.newIndex, 0, item);
-                save();
-            }
-        });
-    }
-
-    function calculateOnly() {
-        const job = data.jobs[data.currentJob];
-        const list = job.mode === 'weekly' ? job.weekly : job.custom;
-        const rows = document.querySelectorAll('.day-row');
         let totalMin = 0;
+        const calc = (s,e,b) => {
+            if(!s || !e) return 0;
+            const [sh,sm] = s.split(':').map(Number); const [eh,em] = e.split(':').map(Number);
+            let start = sh*60+sm; let end = eh*60+em; if(end<start) end+=1440;
+            return Math.max(0, (end-start)-(b||0));
+        };
 
-        list.forEach((entry, i) => {
-            let diff = 0;
-            if(entry.s && entry.e) {
-                const [sH, sM] = entry.s.split(':').map(Number);
-                const [eH, eM] = entry.e.split(':').map(Number);
-                let startM = sH * 60 + sM;
-                let endM = eH * 60 + eM;
-                if(endM < startM) endM += 1440;
-                diff = Math.max(0, (endM - startM) - (entry.b || 0));
-                totalMin += diff;
-            }
-            if(rows[i]) rows[i].querySelector('.day-total').innerText = (diff/60).toFixed(2) + 'h';
-        });
-
+        if(job.mode==='weekly') {
+            job.weeks.forEach((w, wi) => w.days.forEach((d, di) => {
+                let m = calc(d.s, d.e, d.b); totalMin += m;
+                const el = document.querySelector(`.day-total-week[data-w="${wi}"][data-d="${di}"]`);
+                if(el) el.innerText = (m/60).toFixed(2)+'h';
+            }));
+        } else {
+            job.custom.forEach((e, i) => {
+                let m = calc(e.s, e.e, e.b); totalMin += m;
+                const el = document.querySelector(`.day-total-custom[data-idx="${i}"]`);
+                if(el) el.innerText = (m/60).toFixed(2)+'h';
+            });
+        }
         document.getElementById('grandTotal').innerText = `${Math.floor(totalMin/60)}h ${totalMin%60}m`;
-        document.getElementById('grandPay').innerText = `${data.currency}${((totalMin/60) * job.wage).toFixed(2)}`;
+        
+        // Show currency after number (e.g. 500.00 kr)
+        document.getElementById('grandPay').innerText = `${((totalMin/60)*job.wage).toFixed(2)} ${data.currency}`;
     }
 
     function exportCSV() {
-        const job = data.jobs[data.currentJob];
-        const list = job.mode === 'weekly' ? job.weekly : job.custom;
-        let csv = "Date,Job,In,Out,Break_Min,Hours,Pay\n";
+        const j = data.jobs[data.currentJob];
+        const list = j.mode==='weekly' ? j.weeks.flatMap(w => w.days.map(d=>({dt:w.startDate, ...d}))) : j.custom;
+        let csv = "Date,Job,In,Out,Break,Hours\n";
         list.forEach(e => {
             if(!e.s || !e.e) return;
-            const [sH, sM] = e.s.split(':').map(Number);
-            const [eH, eM] = e.e.split(':').map(Number);
-            let start = sH * 60 + sM; let end = eH * 60 + eM; if(end < start) end += 1440;
-            let net = Math.max(0, (end - start) - (e.b || 0));
-            let hours = (net / 60).toFixed(2);
-            csv += `${e.dt},${data.currentJob},${e.s},${e.e},${e.b},${hours},${(hours * job.wage).toFixed(2)}\n`;
+            const [sh,sm]=e.s.split(':').map(Number); const [eh,em]=e.e.split(':').map(Number);
+            let s=sh*60+sm; let en=eh*60+em; if(en<s) en+=1440;
+            let h = ((Math.max(0, (en-s)-(e.b||0)))/60).toFixed(2);
+            csv += `${e.dt||''},${data.currentJob},${e.s},${e.e},${e.b},${h}\n`;
         });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `WorkExport.csv`; a.click();
+        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+        const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${data.currentJob}.csv`; a.click();
     }
+
+    function saveFullBackup() {
+        const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+        const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Backup_${new Date().toISOString().split('T')[0]}.json`; a.click();
+    }
+
+    function restoreFullBackup(ev) {
+        const reader = new FileReader();
+        reader.onload = (e) => { 
+            try {
+                data = JSON.parse(e.target.result); 
+                save(); 
+                location.reload(); 
+            } catch(err) { alert("Fejl i backup-fil"); }
+        };
+        reader.readAsText(ev.target.files[0]);
+    }
+
+    function deleteWeek(i) { if(confirm("Slet denne uge?")) { data.jobs[data.currentJob].weeks.splice(i,1); save(); } }
+    function removeCustomRow(i) { data.jobs[data.currentJob].custom.splice(i,1); save(); }
+    function deleteJob() { if(confirm("Slet dette job permanent?")) { delete data.jobs[data.currentJob]; location.reload(); } }
+
     render();
 </script>
 </body>
